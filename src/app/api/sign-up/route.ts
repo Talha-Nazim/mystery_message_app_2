@@ -26,17 +26,20 @@ export async function POST(request: Request) {
     const existingUserByEmail = await UserModel.findOne({ email });
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     if (existingUserByEmail) {
-      if(existingUserByEmail.isVerified){
-        return Response.json({
+      if (existingUserByEmail.isVerified) {
+        return Response.json(
+          {
             success: false,
-            message: "User already exist with this email"
-        }, {status: 400})
+            message: "User already exist with this email",
+          },
+          { status: 400 }
+        );
       } else {
-        const hasedPassword = await bcrypt.hash(password, 10)
-        existingUserByEmail.password = hasedPassword
-        existingUserByEmail.verifyCode = verifyCode
-        existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 3600000)
-        await existingUserByEmail.save()
+        const hasedPassword = await bcrypt.hash(password, 10);
+        existingUserByEmail.password = hasedPassword;
+        existingUserByEmail.verifyCode = verifyCode;
+        existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 3600000);
+        await existingUserByEmail.save();
       }
     } else {
       const hasedPassword = await bcrypt.hash(password, 10);
@@ -53,27 +56,32 @@ export async function POST(request: Request) {
         isAcceptingMessages: true,
         messages: [],
       });
-      await newUser.save()
+      await newUser.save();
     }
     // send verification email
     const emailResponse = await sendVerificationEmail(
-        email,
-        password,
-        verifyCode
-    )
+      email,
+      password,
+      verifyCode
+    );
 
-    if(!emailResponse.success){
-        return Response.json({
-            success: false,
-            message: emailResponse.message
-        }, {status: 500})
+    if (!emailResponse.success) {
+      return Response.json(
+        {
+          success: false,
+          message: emailResponse.message,
+        },
+        { status: 500 }
+      );
     }
 
-    return Response.json({
-            success: true,
-            message: "User registered successfully. Please verify your email"
-        }, {status: 201})
-
+    return Response.json(
+      {
+        success: true,
+        message: "User registered successfully. Please verify your email",
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.log("Error registering User", error);
     return Response.json(
